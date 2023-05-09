@@ -1,0 +1,26 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Check service HTTP
+      command: systemctl status apache2.service
+      ignore_errors: yes
+      changed_when: false
+      register: content1
+
+    - name: Check conditionally
+      debug:
+        msg: "Nothing to do!"
+      when: content1 is succeeded
+
+    - name: Turn up service
+      service:
+        name: apache2
+        state: started
+      when: content1 is failed
+      register: content2
+
+    - name: Announcement
+      debug:
+        msg: "Service is turn up!"
+      when: content2 is changed
